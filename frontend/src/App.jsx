@@ -22,6 +22,8 @@ const Cart = lazy(() => import("./pages/Cart"));
 const Order = lazy(() => import("./pages/Order"));
 const Register = lazy(() => import("./pages/Register"));
 const StaffManagement = lazy(() => import("./pages/StaffManagement"));
+const Profile = lazy(() => import("./pages/Profile"));
+
 function App() {
   return (
     <>
@@ -125,6 +127,17 @@ function App() {
               <Suspense fallback={<div>Loading...</div>}>
                 <ProtectedRoute routeTo="/client/login" rolesAllowed={["owner", "cashier"]}>
                   <Transactions />
+                </ProtectedRoute>
+              </Suspense>
+            }
+          />
+
+          <Route
+            path="/profile/:id"  // Changed from "/client/profile/${user?.id}"
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <ProtectedRoute routeTo="/client/login" rolesAllowed={["everyone"]}>
+                  <Profile />
                 </ProtectedRoute>
               </Suspense>
             }

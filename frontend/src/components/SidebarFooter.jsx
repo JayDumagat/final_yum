@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import useAuthStore from "../stores/useAuthStore";
 import { Link } from "react-router-dom";
+import { UserCircle } from "lucide-react"; // Add this import
 
 export default function SidebarFooter() {
   const { user, logout } = useAuthStore();
@@ -38,7 +39,9 @@ export default function SidebarFooter() {
             className="w-full inline-flex shrink-0 items-center gap-x-2 p-2 text-start text-sm text-gray-800 rounded-md hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700"
             onClick={toggleDropdown}
           >
-            <div className="shrink-0 w-10 h-10 rounded-full bg-gray-200 dark:bg-neutral-700"></div>
+            <div className="shrink-0 w-10 h-10 rounded-full bg-gray-200 dark:bg-neutral-700 flex items-center justify-center">
+              <UserCircle className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+            </div>
             {user?.firstName} {user?.lastName}
             <svg
               className="shrink-0 size-3.5 ms-auto"
