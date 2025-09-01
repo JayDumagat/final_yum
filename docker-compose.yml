@@ -10,10 +10,12 @@ services:
       MYSQL_DATABASE: mydb
       MYSQL_USER: myuser
       MYSQL_PASSWORD: mypassword
-    ports:
-      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-prootpassword"]
+      interval: 10s
+      retries: 5
     networks:
       - app-network
 
@@ -21,10 +23,12 @@ services:
     image: redis:7.0
     container_name: redis_cache
     restart: always
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      retries: 5
     networks:
       - app-network
 
@@ -50,12 +54,19 @@ services:
       dockerfile: Dockerfile
     container_name: backend_app
     restart: always
-    command: ["sh", "./docker-entrypoint.sh"]
     working_dir: /app
+    command: >
+      sh -c "
+        npm install --omit=dev &&
+        node server.js
+      "
     depends_on:
-      - mysql
-      - redis
-      - minio
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_started
     environment:
       NODE_ENV: production
       DB_HOST: mysql
@@ -73,18 +84,10 @@ services:
     networks:
       - app-network
 
-  frontend:
+  nginx:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
-    container_name: frontend_app
-    restart: always
-    command: ["nginx", "-g", "daemon off;"]
-    networks:
-      - app-network
-
-  nginx:
-    image: nginx:latest
+      dockerfile: Dockerfile.prod
     container_name: nginx_proxy
     restart: always
     ports:
@@ -95,7 +98,6 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./certs:/etc/nginx/certs:ro
     depends_on:
-      - frontend
       - backend
     networks:
       - app-network
